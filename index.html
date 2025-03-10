@@ -12,9 +12,23 @@
             height: 100%;
             overflow: hidden;
         }
+
+        /* Make the QR code scanner fill the screen */
         #qr-reader {
             width: 100%;
             height: 100%;
+        }
+
+        /* Style the QR box for scanning */
+        .qr-box {
+            border: 5px solid rgba(255, 255, 255, 0.7);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80%;
+            height: 80%;
+            transform: translate(-50%, -50%);
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -25,20 +39,20 @@
         document.addEventListener("DOMContentLoaded", function () {
             const html5QrCode = new Html5Qrcode("qr-reader");
 
-            // Start the QR code scanner
+            // Start the QR code scanner with full-screen camera feed
             html5QrCode.start(
                 { facingMode: "environment" }, // Prefer back camera on mobile
                 {
-                    fps: 15,          // Higher FPS for smoother scanning
-                    qrbox: 250,       // Set QR box size to scan
-                    aspectRatio: 1.0, // Ensure the scan box is square
+                    fps: 15,          // Set FPS for smoother scanning
+                    qrbox: { width: 250, height: 250 }, // Square QR box dimensions
+                    aspectRatio: 1.0, // Maintain square aspect ratio for QR box
                     constraints: {
-                        facingMode: "environment" // Use back camera on mobile
+                        facingMode: "environment" // Use the back camera
                     }
                 }, 
                 function (decodedText, decodedResult) {
-                    alert("QR Code decoded: " + decodedText);
-                    html5QrCode.stop();  // Stop scanning after a successful scan
+                    // Redirect to the desired URL with decoded result
+                    window.location.href = `https://real-demo.noloco.co/daily-check-all?assigneevvJLi2JkI=${encodeURIComponent(decodedText)}`;
                 },
                 function (error) {
                     console.warn("QR code scan error: ", error);
