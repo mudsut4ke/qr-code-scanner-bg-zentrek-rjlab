@@ -3,30 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera View</title>
+    <title>Camera</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
+        /* Make the video element fullscreen */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
         }
         video {
             width: 100%;
-            height: auto;
-            border: 1px solid black;
-        }
-        h1 {
-            margin-top: 50px;
+            height: 100%;
+            object-fit: cover; /* Ensure it covers the screen */
         }
     </style>
 </head>
 <body>
-    <h1>Camera View</h1>
     <video id="camera" autoplay></video>
 
     <script>
         // Access the device camera
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
+            const constraints = { 
+                video: { 
+                    facingMode: "environment" // Prefer back camera on mobile
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
                 .then(function(stream) {
                     // Display the camera stream in the video element
                     var videoElement = document.getElementById('camera');
