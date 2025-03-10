@@ -9,55 +9,68 @@
         body, html {
             margin: 0;
             padding: 0;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
+            background: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Make the QR code scanner fill the screen */
+        /* Fullscreen QR Scanner */
         #qr-reader {
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
-        /* Style the QR box for scanning */
-        .qr-box {
-            border: 5px solid rgba(255, 255, 255, 0.7);
+        /* Square QR box overlay */
+        .qr-overlay {
             position: absolute;
+            width: 60vw; /* Adjust size */
+            height: 60vw; /* Keep square */
+            max-width: 300px;
+            max-height: 300px;
+            border: 4px solid rgba(255, 255, 255, 0.8);
             top: 50%;
             left: 50%;
-            width: 80%;
-            height: 80%;
             transform: translate(-50%, -50%);
             box-sizing: border-box;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
     <div id="qr-reader"></div>
+    <div class="qr-overlay"></div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const html5QrCode = new Html5Qrcode("qr-reader");
+            const qrReader = new Html5Qrcode("qr-reader");
 
-            // Start the QR code scanner with full-screen camera feed
-            html5QrCode.start(
-                { facingMode: "environment" }, // Prefer back camera on mobile
+            function onScanSuccess(decodedText) {
+                window.location.href = `https://real-demo.noloco.co/daily-check-all?assigneevvJLi2JkI=${encodeURIComponent(decodedText)}`;
+            }
+
+            function onScanError(error) {
+                console.warn("QR code scan error: ", error);
+            }
+
+            qrReader.start(
+                { facingMode: "environment" }, // Use back camera
                 {
-                    fps: 15,          // Set FPS for smoother scanning
-                    qrbox: { width: 250, height: 250 }, // Square QR box dimensions
-                    aspectRatio: 1.0, // Maintain square aspect ratio for QR box
-                    constraints: {
-                        facingMode: "environment" // Use the back camera
+                    fps: 15,
+                    qrbox: function(viewfinderWidth, viewfinderHeight) {
+                        let size = Math.min(viewfinderWidth, viewfinderHeight) * 0.6; // 60% of screen
+                        return { width: size, height: size };
                     }
-                }, 
-                function (decodedText, decodedResult) {
-                    // Redirect to the desired URL with decoded result
-                    window.location.href = `https://real-demo.noloco.co/daily-check-all?assigneevvJLi2JkI=${encodeURIComponent(decodedText)}`;
                 },
-                function (error) {
-                    console.warn("QR code scan error: ", error);
-                }
-            ).catch(function (err) {
+                onScanSuccess,
+                onScanError
+            ).catch(err => {
                 console.error("Error starting QR code scanner: ", err);
             });
         });
