@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Scanner</title>
-    <!-- Include the html5-qrcode library -->
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <!-- Include the html5-qrcode library from a more reliable CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,8 +32,14 @@
     <div id="scanner-status">Waiting for QR code...</div>
 
     <script>
-        // Ensure that Html5Qrcode is loaded before using it
+        // Wait for the DOM to be fully loaded before initializing the QR scanner
         document.addEventListener("DOMContentLoaded", function() {
+            // Check if Html5Qrcode is available
+            if (typeof Html5Qrcode === "undefined") {
+                alert("QR Code scanner library is not available. Please try again later.");
+                return;
+            }
+
             function onScanSuccess(decodedText, decodedResult) {
                 // Handle the decoded QR code text
                 document.getElementById('scanner-status').textContent = `QR Code decoded: ${decodedText}`;
