@@ -3,31 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirect to Camera</title>
+    <title>QR Code Scanner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <style>
-        body {
+        body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             overflow: hidden;
         }
+        #qr-reader {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
+    <div id="qr-reader"></div>
+
     <script>
-        // Function to automatically redirect to camera app based on mobile device
-        window.onload = function() {
-            if (navigator.userAgent.match(/Android/i)) {
-                // Android device: Attempt to open camera app
-                window.location.href = 'camera://';
-            } else if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-                // iOS device: Attempt to open camera app
-                window.location.href = 'camera://';
-            } else {
-                // Inform the user if they are on a non-mobile device
-                alert("This feature is only available on mobile devices.");
-            }
-        };
+        document.addEventListener("DOMContentLoaded", function () {
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start(
+                { facingMode: "environment" }, // Prefer back camera on mobile
+                { fps: 10, qrbox: 250 }, // QR scanning settings
+                function (decodedText) {
+                    alert("QR Code decoded: " + decodedText);
+                    html5QrCode.stop();
+                },
+                function (error) {
+                    console.warn("QR code scan error: ", error);
+                }
+            ).catch(function (err) {
+                console.error("Error starting QR code scanner: ", err);
+            });
+        });
     </script>
 </body>
 </html>
