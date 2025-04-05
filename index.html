@@ -57,7 +57,7 @@
                 // Stop the scanner before redirecting
                 qrReader.stop().then(() => {
                     console.log("Scanner stopped.");
-                    window.location.href = `/daily-check-all?assetmentIdValvvJLi2JkI=${encodeURIComponent(decodedText)}`;
+                    window.location.href = `https://real-demo.noloco.co/daily-check-all?assetmentIdValvvJLi2JkI=${encodeURIComponent(decodedText)}`;
                 }).catch(err => {
                     console.error("Error stopping scanner: ", err);
                 });
