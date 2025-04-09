@@ -1,87 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background: black;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QR Code Scanner</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        /* Fullscreen QR Scanner */
-        #qr-reader {
-            width: 100vw;
-            height: 100vh;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
+    #qr-reader {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
 
-        /* Square QR box overlay */
-        .qr-overlay {
-            position: absolute;
-            width: 60vw;
-            height: 60vw;
-            max-width: 300px;
-            max-height: 300px;
-            border: 4px solid rgba(255, 255, 255, 0.8);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            box-sizing: border-box;
-            z-index: 10;
-        }
-    </style>
+    .qr-overlay {
+      position: absolute;
+      width: 50vw;
+      height: 50vw;
+      max-width: 240px;
+      max-height: 240px;
+      border: 4px solid rgba(255, 255, 255, 0.8);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-sizing: border-box;
+      z-index: 10;
+    }
+
+    #qr-reader video {
+      filter: brightness(1.2) contrast(1.1);
+    }
+
+    .qr-instruction {
+      position: absolute;
+      bottom: 20px;
+      color: white;
+      font-size: 1rem;
+      text-align: center;
+      width: 100%;
+      z-index: 11;
+    }
+
+    #toggle-torch {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 18px;
+      z-index: 20;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <div id="qr-reader"></div>
-    <div class="qr-overlay"></div>
+  <div id="qr-reader"></div>
+  <div class="qr-overlay"></div>
+  <div class="qr-instruction">Align QR code within the square</div>
+  <button id="toggle-torch">🔦</button>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const qrReader = new Html5Qrcode("qr-reader");
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const qrReader = new Html5Qrcode("qr-reader");
+      let lastScanned = null;
+      let scanCooldown = false;
+      let torchOn = false;
 
-            function onScanSuccess(decodedText) {
-                console.log("QR Code detected: ", decodedText);
+      function onScanSuccess(decodedText) {
+        if (scanCooldown || decodedText === lastScanned) return;
 
-                // Stop the scanner before redirecting
-                qrReader.stop().then(() => {
-                    console.log("Scanner stopped.");
-                    window.location.href = `https://pyt2check.binggoal.net/daily-check-all?assetmentIdValvvJLi2JkI=${encodeURIComponent(decodedText)}`;
-                }).catch(err => {
-                    console.error("Error stopping scanner: ", err);
-                });
-            }
+        lastScanned = decodedText;
+        scanCooldown = true;
 
-            function onScanError(error) {
-                console.warn("QR code scan error: ", error);
-            }
-
-            qrReader.start(
-                { facingMode: "environment" }, // Use back camera
-                {
-                    fps: 15,
-                    qrbox: function(viewfinderWidth, viewfinderHeight) {
-                        let size = Math.min(viewfinderWidth, viewfinderHeight) * 0.6;
-                        return { width: size, height: size };
-                    }
-                },
-                onScanSuccess,
-                onScanError
-            ).catch(err => {
-                console.error("Error starting QR code scanner: ", err);
-            });
+        console.log("QR Code detected: ", decodedText);
+        qrReader.stop().then(() => {
+          console.log("Scanner stopped.");
+          window.location.href = `https://pyt2check.binggoal.net/daily-check-all?assetmentIdValvvJLi2JkI=${encodeURIComponent(decodedText)}`;
+        }).catch(err => {
+          console.error("Error stopping scanner: ", err);
         });
-    </script>
+      }
+
+      function onScanError(error) {
+        console.warn("QR scan error: ", error);
+      }
+
+      qrReader.start(
+        { facingMode: "environment" },
+        {
+          fps: 30,
+          aspectRatio: 1.0,
+          qrbox: function(viewfinderWidth, viewfinderHeight) {
+            let size = Math.min(viewfinderWidth, viewfinderHeight) * 0.5;
+            return { width: size, height: size };
+          }
+        },
+        onScanSuccess,
+        onScanError
+      ).catch(err => {
+        console.error("Error starting QR scanner: ", err);
+      });
+
+      // Torch toggle
+      document.getElementById('toggle-torch').addEventListener('click', async () => {
+        try {
+          const capabilities = await qrReader.getRunningTrackCapabilities();
+          if (capabilities && capabilities.torch) {
+            await qrReader.applyVideoConstraints({ advanced: [{ torch: !torchOn }] });
+            torchOn = !torchOn;
+          } else {
+            alert("Torch not supported on this device.");
+          }
+        } catch (err) {
+          console.error("Error toggling torch: ", err);
+        }
+      });
+    });
+  </script>
 </body>
 </html>
